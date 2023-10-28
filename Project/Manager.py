@@ -63,11 +63,14 @@ class Manager:
 
                 #check to see if we have shown any prompts yet. First prompt shown.
                 if self.game.get_current_prompt_ind() == 0:
-                    prompt = Prompt(self.win, str(self.game.get_next_prompt()), self.game.prompt_time_visible, self.game.prompt_time_respond)
+                    val = self.game.get_next_prompt()
+                    prompt = Prompt(self.win, str(val), self.game.prompt_time_visible, self.game.prompt_time_respond)
                     prompt.draw(self.win)
+                    flag_responded = False #only allow a single response per prompt
+                    flag_correct = False
                     pygame.display.update()
                     self.clock.tick(30)
-                    print(f"Displayed prompt {self.game.get_current_prompt_ind()} at time {self.clock.get_time()}")
+                    print(f"Displayed prompt {self.game.get_current_prompt_ind()}, value {val}, correct response {self.game.get_matches()[self.game.get_current_prompt_ind()-1]}")
 
                 #we've shown at least one prompt
                 else:
@@ -83,25 +86,60 @@ class Manager:
                         if event.type == pygame.KEYDOWN:
 
                             #user suspects a match
-                            if event.key == pygame.K_j:
-                                print("J WAS PRESSED IN GAME - MATCH")
+                            if event.key == pygame.K_j and not flag_responded:
+                                result = self.game.store_response(1)
+                                flag_responded = True
+                                flag_correct = result
+                                print(f"{result}")
 
                             #user suspects no match
-                            if event.key == pygame.K_f:
-                                print("F WAS PRESSED IN GAME - NONMATCH")
+                            if event.key == pygame.K_f and not flag_responded:
+                                result = self.game.store_response(0)
+                                flag_responded = True
+                                flag_correct = result
+                                print(f"{result}")
+                
 
                     #reduce visible time remaining on current prompt
                     #print(self.clock.tick_busy_loop())
                     prompt.update(self.clock.tick_busy_loop())
                     prompt.draw(self.win) #logic for checking whether still visible is inside prompt.draw
                     
+                    #this one to ensure that pressing some other key doesn't break anything
+                    if flag_responded: 
+                        if flag_correct: #correct response
+                            self.display_text("CORRECT", (self.disp_width/2,self.disp_height/3))
+                        else:
+                            self.display_text("WRONG", (self.disp_width/2,self.disp_height/3))
+
                     #check to see if respond time has been passed
                     if prompt.respondable_timer < 0:
+                        
+                        #if user did not provide a response, treat it as indicating no match
+                        if not flag_responded:
+                            result = self.game.store_response(0)
+                            if result==False:
+                                self.display_text("TOO SLOW/WRONG", (self.disp_width/2,self.disp_height/3))
+                            else:
+                                self.display_text("CORRECT", (self.disp_width/2,self.disp_height/3))
+                        else:
+                            if flag_correct:
+                                self.display_text("CORRECT", (self.disp_width/2,self.disp_height/3))
+                            else:
+                                self.display_text("WRONG", (self.disp_width/2,self.disp_height/3))
+
+                        #self.display_text("Waiting for next prompt...", (self.disp_width/2,self.disp_height/1.4))
+                        pygame.display.update()
+                        pygame.time.delay(500)
+
+
                         #get next prompt
-                        prompt = Prompt(self.win, str(self.game.get_next_prompt()), self.game.prompt_time_visible, self.game.prompt_time_respond)
+                        val = self.game.get_next_prompt()
+                        prompt = Prompt(self.win, str(val), self.game.prompt_time_visible, self.game.prompt_time_respond)
+                        flag_responded = False #only allow a single response per prompt
                         pygame.display.update()
                         self.clock.tick(30)
-                        print(f"Displayed prompt {self.game.get_current_prompt_ind()} at time {self.clock.get_time()}")
+                        print(f"Displayed prompt {self.game.get_current_prompt_ind()}, value {val}, correcrt response {self.game.get_matches()[self.game.get_current_prompt_ind()-1]}")
 
 
                                     

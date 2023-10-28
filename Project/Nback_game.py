@@ -24,10 +24,10 @@ class Nback_game:
 
         #live game variables
         self.current_prompt = 0
-        self.responses = -np.asarray([])
+        self.responses = np.asarray([])
 
         #game results
-        self.successes = None
+        self.successes = np.asarray([])
         self.accuracy = None
 
         self.generate_prompts()
@@ -105,11 +105,15 @@ class Nback_game:
 
     def store_response(self, response):
         #store response (0 or 1) in responses array
-        np.append(self.get_responses,response)
+        self.responses = np.append(self.get_responses,response)
         #store wheter response was correct in successess array
-        np.append(self.successes, response==self.matches[self.get_current_prompt_ind()])
+        self.successes = np.append(self.successes, response==self.matches[self.get_current_prompt_ind()-1])
+
+        #return whether result was correct so it can  be displayed
+        return(response==self.matches[self.get_current_prompt_ind()-1])
 
 
     def report_results(self):
+        self.accuracy = sum(self.successes)/self.num_prompts
         print(f"Test Results : \n {sum(self.successes)} correct reponses out of {self.num_prompts} total prompts. Overall accuracy: {100*self.accuracy} %")
 

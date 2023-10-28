@@ -3,6 +3,8 @@ import numpy as np
 import scipy as sp
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import sys
+from Manager import *
 
 class Nback_game:
 
@@ -20,8 +22,11 @@ class Nback_game:
         self.prompts = None
         self.matches = np.zeros(num_prompts)
 
+        #live game variables
+        self.current_prompt = 0
+        self.responses = -np.asarray([])
+
         #game results
-        self.responses = -1*np.ones(num_prompts)
         self.successes = None
         self.accuracy = None
 
@@ -79,21 +84,32 @@ class Nback_game:
             self.prompts[ind-self.N] = self.prompts[ind]
             self.matches[ind] = 1
 
-    def play_game(self):
+    #sets up the pygame contained in the Manager class
+    def setup_game(self):
+        pygame_mgr = Manager(self)
+        pygame_mgr.gameloop()
 
-        for i,prompt in enumerate(self.prompts):
-            print(str(prompt))
-            response = input("Enter 1 if prompt is the same as the prompt shown %d prompts prior, 0 otherwise: " % (self.N))
-            self.responses[i] = int(response)
-            if self.matches[i] == int(response):
-                print("Correct!")
-            else:
-                print("Incorrect!")
-        
-        self.successes = self.responses == self.matches
-        self.accuracy = float(self.successes.sum())/float(len(self.successes))
-        self.report_results()
-                
+    #helper function return for commandline outputs
+    def get_current_prompt_ind(self):
+        return(self.current_prompt)
+
+    #get the next prompt in the sequence of prompts
+    def get_next_prompt(self):
+        if self.current_prompt < self.num_prompts:
+            ind = self.current_prompt
+            self.current_prompt += 1
+            return(self.prompts[ind])
+        else:
+            print("Game complete.")
+            self.report_results()
+
+    def store_response(self, response):
+        #store response (0 or 1) in responses array
+        np.append(self.get_responses,response)
+        #store wheter response was correct in successess array
+        np.append(self.successes, response==self.matches[self.get_current_prompt_ind()])
+
+
     def report_results(self):
         print(f"Test Results : \n {sum(self.successes)} correct reponses out of {self.num_prompts} total prompts. Overall accuracy: {100*self.accuracy} %")
 

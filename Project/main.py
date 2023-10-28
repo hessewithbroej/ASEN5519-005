@@ -5,7 +5,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import Nback_game as nbg
 
-game = nbg.Nback_game(2, 20, 5, 0.25)
+game = nbg.Nback_game(2, 20, 0.25, 1000, 3000)
 
-game.play_game()
+game.setup_game()
 

@@ -57,8 +57,27 @@ class Manager:
                                 self.display_text(text_string, (self.disp_width/2,self.disp_height/1.6))
                                 pygame.display.update()
                                 pygame.time.delay(1000)
-                            self.game_phase = "playing"
-                
+                            self.game_phase = "info_enter"
+            
+            elif self.game_phase == "info_enter":
+                self.display_text("If this is your first trial, press J.", (self.disp_width/2,self.disp_height/1.6))
+                self.display_text("Otherwise, enter your 5-digit ID #.", (self.disp_width/2,self.disp_height/1.6))
+
+                for event in pygame.event.get():
+                    #quit game when forced
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                        
+                    if event.type == pygame.KEYDOWN:
+                        
+                        if event.key == pygame.K_j:
+                            print("J WAS PRESSED")
+                            self.game_phase = "id_assignment"
+
+            elif self.game_phase == "id_assignment":
+                print("69")
+
             elif self.game_phase == "playing":
 
                 #check to see if we have shown any prompts yet. First prompt shown.

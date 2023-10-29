@@ -2,14 +2,16 @@ import pygame
 import sys
 import Nback_game as nbg
 from Prompt import *
+from Trial import *
 
 
 class Manager:
     pygame.font.init()
     DEFAULT_FONT = pygame.font.Font('freesansbold.ttf',32)
 
-    def __init__(self, game, disp_width = 700, disp_height = 700):
-        self.game = game
+    def __init__(self, trial, disp_width = 700, disp_height = 700):
+        self.trial = trial
+        # self.game = self.trial.game
         self.game_time = -1
         self.game_phase = "title"
         self.running = False
@@ -28,9 +30,11 @@ class Manager:
         self.win.blit(text,textRect)
 
     def gameloop(self):
-
+        
+        flag_game_complete = False
         self.running = True
         itrs = 0
+
         while self.running:
             itrs += 1 
             # print(f"Iterations: {itrs}")
@@ -51,7 +55,6 @@ class Manager:
                             print("J WAS PRESSED")
                             seconds = 3
                             for i in range(seconds+1):
-                                print(f"i: {i}")
                                 self.win.fill((255, 255, 255))
                                 text_string = f"Test Beginning in {seconds-i} seconds..."
                                 self.display_text(text_string, (self.disp_width/2,self.disp_height/1.6))
@@ -61,7 +64,7 @@ class Manager:
             
             elif self.game_phase == "info_enter":
                 self.display_text("If this is your first trial, press J.", (self.disp_width/2,self.disp_height/1.6))
-                self.display_text("Otherwise, enter your 5-digit ID #.", (self.disp_width/2,self.disp_height/1.6))
+                self.display_text("Otherwise, enter your 5-digit ID #.", (self.disp_width/2,self.disp_height/1.4))
 
                 for event in pygame.event.get():
                     #quit game when forced
@@ -76,9 +79,49 @@ class Manager:
                             self.game_phase = "id_assignment"
 
             elif self.game_phase == "id_assignment":
-                print("69")
+                print("SKIPPING ID ASSIGNMENT...")
+                self.game_phase = "playing"
 
             elif self.game_phase == "playing":
+                
+                #when user has answered all prompts in a given nback game/task, or its our first game
+                if flag_game_complete or self.trial.current_task == 0:
+                    if flag_game_complete:
+                        self.win.fill((255, 255, 255))
+                        self.display_text(f"Completed game number {self.trial.current_task} of {len(self.trial.task_sequence)}.", (self.disp_width/2,self.disp_height/1.6))
+                        self.display_text(f"Overall Accuracy: {self.game.accuracy*100}%", (self.disp_width/2,self.disp_height/1.8))
+                        pygame.display.update()
+                        pygame.time.delay(5000)
+                    
+                    #only show countdown when tasks remaining
+                    if self.trial.current_task < len(self.trial.task_sequence):
+                        seconds = 5
+                        for i in range(seconds+1):
+                            self.win.fill((255, 255, 255))
+                            text_string = f"Next game begins in {seconds-i} seconds..."
+                            self.display_text(text_string, (self.disp_width/2,self.disp_height/1.6))
+                            pygame.display.update()
+                            pygame.time.delay(1000)
+
+                    self.game = self.trial.serve_next_game()
+                    #if we've completed all tasks
+                    if self.game == None:
+                        self.win.fill((255, 255, 255))
+                        self.display_text("All games in trial have been completed.", (self.disp_width/2,self.disp_height/1.6))
+                        self.display_text("Exiting", (self.disp_width/2,self.disp_height/1.8))
+                        pygame.display.update()
+                        pygame.time.delay(5000)
+                        pygame.quit()
+                        sys.exit()
+
+
+                    flag_game_complete = False
+
+
+                #completed the set of games/tasks. Move to finishing screen
+                if self.game == None:
+                    self.game_phase = "finished"
+                    continue
 
                 #check to see if we have shown any prompts yet. First prompt shown.
                 if self.game.get_current_prompt_ind() == 0:
@@ -154,11 +197,17 @@ class Manager:
 
                         #get next prompt
                         val = self.game.get_next_prompt()
+                        if val==None:
+                            flag_game_complete = True
+                            print(f"Completed Game #{self.trial.current_task-1}")
+                            continue
+
                         prompt = Prompt(self.win, str(val), self.game.prompt_time_visible, self.game.prompt_time_respond)
                         flag_responded = False #only allow a single response per prompt
                         pygame.display.update()
                         self.clock.tick(30)
                         print(f"Displayed prompt {self.game.get_current_prompt_ind()}, value {val}, correcrt response {self.game.get_matches()[self.game.get_current_prompt_ind()-1]}")
+
 
 
                                     

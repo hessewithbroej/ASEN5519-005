@@ -84,11 +84,6 @@ class Nback_game:
             self.prompts[ind-self.N] = self.prompts[ind]
             self.matches[ind] = 1
 
-    #sets up the pygame contained in the Manager class
-    # def setup_game(self):
-        # pygame_mgr = Manager(self)
-        # pygame_mgr.gameloop()
-
     #helper function return for commandline outputs
     def get_current_prompt_ind(self):
         return(self.current_prompt)
@@ -100,13 +95,12 @@ class Nback_game:
             self.current_prompt += 1
             return(self.prompts[ind])
         else:
-            print("Game complete.")
             self.report_results()
             return(None)
 
     def store_response(self, response):
         #store response (0 or 1) in responses array
-        self.responses = np.append(self.get_responses,response)
+        self.responses = np.append(self.responses,response)
         #store wheter response was correct in successess array
         self.successes = np.append(self.successes, response==self.matches[self.get_current_prompt_ind()-1])
 

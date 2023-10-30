@@ -108,7 +108,7 @@ class Manager:
                                 #enforce a minimum wait between trials
                                 datetime_object = datetime.strptime(datetime_str, '%m/%d/%Y %H:%M:%S')
                                 now = datetime.now()
-                                if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS:
+                                if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS/1000:
                                     self.win.fill((255, 255, 255))
                                     self.display_text(f"Must wait a minimum of 0.001 day between trials.", (self.disp_width/2,self.disp_height/1.8))
                                     self.display_text(f"Last trial completed {datetime_str}", (self.disp_width/2,self.disp_height/1.6))

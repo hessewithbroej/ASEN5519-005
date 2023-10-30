@@ -110,7 +110,7 @@ class Manager:
                                 now = datetime.now()
                                 if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS:
                                     self.win.fill((255, 255, 255))
-                                    self.display_text(f"Must wait a minimum of 1 day between trials.", (self.disp_width/2,self.disp_height/1.8))
+                                    self.display_text(f"Must wait a minimum of 0.001 day between trials.", (self.disp_width/2,self.disp_height/1.8))
                                     self.display_text(f"Last trial completed {datetime_str}", (self.disp_width/2,self.disp_height/1.6))
                                     pygame.display.update()
                                     pygame.time.delay(5000)
@@ -262,7 +262,7 @@ class Manager:
                     flag_correct = False
                     pygame.display.update()
                     self.clock.tick(30)
-                    print(f"Displayed prompt {self.game.get_current_prompt_ind()}, value {val}, correct response {self.game.get_matches()[self.game.get_current_prompt_ind()-1]}")
+                    #print(f"Displayed prompt {self.game.get_current_prompt_ind()}, value {val}, correct response {self.game.get_matches()[self.game.get_current_prompt_ind()-1]}")
 
                 #we've shown at least one prompt
                 else:
@@ -327,14 +327,14 @@ class Manager:
                         val = self.game.get_next_prompt()
                         if val==None:
                             flag_game_complete = True
-                            print(f"Completed Game #{self.trial.current_task-1}")
+                            print(f"Completed Game #{self.trial.current_task}")
                             continue
 
                         prompt = Prompt(self.win, str(val), self.game.prompt_time_visible, self.game.prompt_time_respond)
                         flag_responded = False #only allow a single response per prompt
                         pygame.display.update()
                         self.clock.tick(30)
-                        print(f"Displayed prompt {self.game.get_current_prompt_ind()}, value {val}, correct response {self.game.get_matches()[self.game.get_current_prompt_ind()-1]}")
+                        #print(f"Displayed prompt {self.game.get_current_prompt_ind()}, value {val}, correct response {self.game.get_matches()[self.game.get_current_prompt_ind()-1]}")
 
 
 

@@ -1,9 +1,4 @@
-import pygame
 import numpy as np
-import scipy as sp
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import sys
 from Manager import *
 
 class Nback_game:
@@ -71,8 +66,7 @@ class Nback_game:
         self.prompts = np.random.choice(self.TWO_DIGIT_INTEGERS,self.num_prompts, replace=False)
 
         #number of prompts satisfying the specified N-back condition
-        #the first N responses can't be true by nature of the game
-        num_true = int(np.ceil((self.num_prompts-self.N)*self.proportion_true))
+        num_true = int(np.ceil(self.num_prompts*self.proportion_true))
 
         #generate a list that contains the prompt numbers that should evaluate to true
         true_indices = np.sort(np.random.choice(range(self.N,self.num_prompts), num_true, replace=False))[::-1]
@@ -80,14 +74,52 @@ class Nback_game:
         #replace prompts so that the correct response is true for the above indices
         #need to replace from the back of the list to the front so we don't overwrite 
         #previously-updated prompts
+        matches = np.asarray([])
+        matched_inds =  np.asarray([])
         for i,ind in enumerate(true_indices):
             self.prompts[ind-self.N] = self.prompts[ind]
             self.matches[ind] = 1
+            matches = np.append(matches,self.prompts[ind])
+            matched_inds = np.append(matched_inds,[ind,ind-self.N]) #keep track of the indices we've already manipulated
 
-    #sets up the pygame contained in the Manager class
-    def setup_game(self):
-        pygame_mgr = Manager(self)
-        pygame_mgr.gameloop()
+        #get the indices that aren't already associated with correct matches
+        free_inds = np.asarray([])
+        for i in range(self.num_prompts):
+            if i not in matched_inds:
+                free_inds = np.append(free_inds,i)
+        
+        non_matches = np.asarray([])
+        for val in self.prompts:
+            if val not in matches:
+                non_matches = np.append(non_matches,val)
+
+        #put a total of 40% false flags in the prompt sequence, but not where it becomes another correct match
+        #(Don't want duplicating numbers to always be matches)
+        false_inds = list(np.sort(np.random.choice(free_inds, int(np.floor(self.num_prompts*0.4)), replace=False))[::-1])
+        for i,false_ind in enumerate(false_inds):
+            val = int(np.random.choice(non_matches, 1, replace=True))
+            if false_ind >= self.N:
+
+                if false_ind < self.num_prompts-self.N:
+                    #print(str(self.prompts[int(false_ind)-self.N]) + " , " + str(val))
+                    if int(self.prompts[int(false_ind)-self.N]) != val and int(self.prompts[int(false_ind)+self.N]) != val:
+                        #print("Allowed...")
+                        self.prompts[int(false_ind)] = val
+                else: 
+                    if int(self.prompts[int(false_ind)-self.N]) != val:
+                        self.prompts[int(false_ind)] = val
+
+            else:
+                if int(self.prompts[int(false_ind)+self.N]) != val:
+                    self.prompts[int(false_ind)] = val
+
+    def solve_NBack(self):
+        num_matches = 0
+        for i,val in enumerate(self.prompts):
+            if i >= self.N:
+                if val == self.prompts[i-self.N]:
+                    num_matches +=1
+        return(num_matches)
 
     #helper function return for commandline outputs
     def get_current_prompt_ind(self):
@@ -100,12 +132,12 @@ class Nback_game:
             self.current_prompt += 1
             return(self.prompts[ind])
         else:
-            print("Game complete.")
             self.report_results()
+            return(None)
 
     def store_response(self, response):
         #store response (0 or 1) in responses array
-        self.responses = np.append(self.get_responses,response)
+        self.responses = np.append(self.responses,response)
         #store wheter response was correct in successess array
         self.successes = np.append(self.successes, response==self.matches[self.get_current_prompt_ind()-1])
 
@@ -115,5 +147,5 @@ class Nback_game:
 
     def report_results(self):
         self.accuracy = sum(self.successes)/self.num_prompts
-        print(f"Test Results : \n {sum(self.successes)} correct reponses out of {self.num_prompts} total prompts. Overall accuracy: {100*self.accuracy} %")
+        print(f"Test Results : \n {sum(self.successes)} correct responses out of {self.num_prompts} total prompts. Overall accuracy: {100*self.accuracy} %")
 

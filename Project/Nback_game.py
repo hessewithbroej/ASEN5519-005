@@ -71,8 +71,7 @@ class Nback_game:
         self.prompts = np.random.choice(self.TWO_DIGIT_INTEGERS,self.num_prompts, replace=False)
 
         #number of prompts satisfying the specified N-back condition
-        #the first N responses can't be true by nature of the game
-        num_true = int(np.ceil((self.num_prompts-self.N)*self.proportion_true))
+        num_true = int(np.ceil(self.num_prompts*self.proportion_true))
 
         #generate a list that contains the prompt numbers that should evaluate to true
         true_indices = np.sort(np.random.choice(range(self.N,self.num_prompts), num_true, replace=False))[::-1]

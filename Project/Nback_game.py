@@ -87,12 +87,17 @@ class Nback_game:
         for i in range(self.num_prompts):
             if i not in matched_inds:
                 free_inds = np.append(free_inds,i)
+        
+        non_matches = np.asarray([])
+        for val in self.prompts:
+            if val not in matches:
+                non_matches = np.append(non_matches,val)
 
         #put a total of 40% false flags in the prompt sequence, but not where it becomes another correct match
         #(Don't want duplicating numbers to always be matches)
         false_inds = list(np.sort(np.random.choice(free_inds, int(np.floor(self.num_prompts*0.4)), replace=False))[::-1])
         for i,false_ind in enumerate(false_inds):
-            val = int(np.random.choice(matches, 1, replace=True))
+            val = int(np.random.choice(non_matches, 1, replace=True))
             if false_ind >= self.N:
 
                 if false_ind < self.num_prompts-self.N:

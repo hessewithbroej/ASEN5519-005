@@ -31,12 +31,13 @@ class Autologger:
     if not prev_results.empty:
       group_num = prev_results.tail(n=1).iloc[0,1]
       trial_num = prev_results.tail(n=1).iloc[0,2]
+      datetime_str = prev_results.tail(n=1).iloc[0,3]
       #test_num = test_num.at[0,"Trial_N"]
     else:
       group_num = None
       trial_num = 0
 
-    return(group_num, trial_num)
+    return(group_num, trial_num, datetime_str)
   
   #from the group num and trial_num, determine which trial/task sequence should be served next
   @classmethod

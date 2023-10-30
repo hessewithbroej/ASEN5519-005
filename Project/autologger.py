@@ -1,18 +1,32 @@
 import pygsheets
 import pandas as pd
 import numpy as np
-
-
+from cryptography.fernet import Fernet
+import os
 class Autologger:
   
-  JSON_KEY_PATH = "./asen5519-nback-project-d1f333490854.json"
-  #JSON_KEY_PATH= "C:/Users/hesse/Desktop/Code/ASEN5519-005/Project/asen5519-nback-project-d1f333490854.json"
+  JSON_ENC_PATH = "sec.json"
+  FERNET_KEY = b'h_pORVoUU5T1nLNKdjKV5YivgsdbxddoIg9XrKVq6Wo='
+
+  def decrypt(self):
+
+    fernet = Fernet(self.FERNET_KEY)
+
+    with open("sec.json",'rb') as file:
+      enc = file.read()
+
+    unenc = fernet.decrypt(enc)
+
+    with open('tmp.json','wb') as f:
+      f.write(unenc)
 
   #Reads the master data sheet as a dataframe
   @classmethod
   def read_trial_data_from_sheet(self):
     #authorization
-    gc = pygsheets.authorize(service_file=self.JSON_KEY_PATH)
+    self.decrypt(self)
+    gc = pygsheets.authorize(service_file="tmp.json")
+    os.remove('tmp.json')
     sh = gc.open("ASEN5519_Project_Data")
     #select the first sheet 
     wks = sh.worksheet('title','MasterData')
@@ -44,8 +58,9 @@ class Autologger:
   def determine_next_trial(self, group_num, trial_num):
     #group_num: which group participant is part of
     #trial_num: participant's last completed trial number
-
-    gc = pygsheets.authorize(service_file=self.JSON_KEY_PATH)
+    self.decrypt(self)
+    gc = pygsheets.authorize(service_file="tmp.json")
+    os.remove('tmp.json')
     sh = gc.open("ASEN5519_Project_Data")
     #select the first sheet 
     wks = sh.worksheet('title','TrialKey')
@@ -67,7 +82,9 @@ class Autologger:
   @classmethod
   def write_trial_data_to_sheet(self, ID, group_num, trial_num, trial_datetime, trial_Ns, trial_accuracies):
     #authorization
-    gc = pygsheets.authorize(service_file=self.JSON_KEY_PATH)
+    self.decrypt(self)
+    gc = pygsheets.authorize(service_file="tmp.json")
+    os.remove('tmp.json')
     # Create empty dataframe
     df = pd.DataFrame()
 
@@ -95,9 +112,10 @@ class Autologger:
   #write individual task responses/results to the TaskData google sheet
   @classmethod
   def write_task_data_to_sheet(self, ID, group_num, trial_num, task_datetime, task_num, task_N, task_prompts, task_matches, task_responses, task_successes,	task_accuracy):
-    
+    self.decrypt(self)
     #authorization
-    gc = pygsheets.authorize(service_file=self.JSON_KEY_PATH)
+    gc = pygsheets.authorize(service_file="tmp.json")
+    os.remove('tmp.json')    
     # Create empty dataframe
     df = pd.DataFrame()
 

@@ -103,7 +103,20 @@ class Manager:
                             if len(user_text) == 5:
                                 ID = np.asarray([int(user_text)])
                                 #get group number and trial number from trialKey spreadsheet to determine the task sequence
-                                group_number, trial_num = Autologger.find_previous_trial_results(Autologger.read_trial_data_from_sheet(), ID)
+                                group_number, trial_num,datetime_str = Autologger.find_previous_trial_results(Autologger.read_trial_data_from_sheet(), ID)
+                                
+                                #enforce a minimum wait between trials
+                                datetime_object = datetime.strptime(datetime_str, '%m/%d/%Y %H:%M:%S')
+                                now = datetime.now()
+                                if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS:
+                                    self.win.fill((255, 255, 255))
+                                    self.display_text(f"Must wait a minimum of 1 day between trials.", (self.disp_width/2,self.disp_height/1.8))
+                                    self.display_text(f"Last trial completed {datetime_str}", (self.disp_width/2,self.disp_height/1.6))
+                                    pygame.display.update()
+                                    pygame.time.delay(5000)
+                                    pygame.quit()
+                                    sys.exit()
+
                                 task_sequence = Autologger.determine_next_trial(group_number, trial_num)
 
                                 if task_sequence == None:
@@ -212,7 +225,7 @@ class Manager:
                             pygame.quit()
                             sys.exit()
 
-                        seconds = 3
+                        seconds = 30
                         for i in range(seconds+1):
                             pygame.event.pump()
                             self.win.fill((255, 255, 255))

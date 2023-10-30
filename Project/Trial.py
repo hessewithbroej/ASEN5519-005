@@ -8,8 +8,9 @@ class Trial:
 
     NBACK_NUM_PROMPTS = 20
     NBACK_PROP_MATCH = 0.25
-    NBACK_PROMPT_TIME_VISIBLE = 100
-    NBACK_PROMPT_TIME_RESPONDABLE = 200
+    NBACK_PROMPT_TIME_VISIBLE = 0.5
+    NBACK_PROMPT_TIME_RESPONDABLE = 3000
+    MIN_TIME_BETWEEN_TRIALS = 86400*1000
 
     def __init__(self, task_sequence, current_task=0):
         self.task_sequence = task_sequence

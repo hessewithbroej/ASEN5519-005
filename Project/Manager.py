@@ -309,7 +309,7 @@ class Manager:
                         if not flag_responded:
                             result = self.game.store_response(0)
                             if result==False:
-                                self.display_text("TOO SLOW/WRONG", (self.disp_width/2,self.disp_height/3))
+                                self.display_text("WRONG", (self.disp_width/2,self.disp_height/3))
                             else:
                                 self.display_text("CORRECT", (self.disp_width/2,self.disp_height/3))
                         else:

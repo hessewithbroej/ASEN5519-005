@@ -104,5 +104,5 @@ class Nback_game:
 
     def report_results(self):
         self.accuracy = sum(self.successes)/self.num_prompts
-        print(f"Test Results : \n {sum(self.successes)} correct reponses out of {self.num_prompts} total prompts. Overall accuracy: {100*self.accuracy} %")
+        print(f"Test Results : \n {sum(self.successes)} correct responses out of {self.num_prompts} total prompts. Overall accuracy: {100*self.accuracy} %")
 

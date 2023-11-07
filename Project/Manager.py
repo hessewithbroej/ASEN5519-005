@@ -5,6 +5,7 @@ from Prompt import *
 from Trial import *
 from Autologger import *
 from datetime import datetime
+import webbrowser
 
 
 class Manager:
@@ -35,6 +36,7 @@ class Manager:
         user_text = '' 
         flag_ID_generated = False
         flag_game_complete = False
+        flag_clicked = False
         self.running = True
         itrs = 0
 
@@ -132,7 +134,7 @@ class Manager:
                                 self.trial.task_sequence = str(task_sequence)
                                 
                                 
-                                self.game_phase = "playing"
+                                self.game_phase = "surveys"
                             else:
                                 self.display_text("Invalid ID #, must be 5 digits.", (self.disp_width/2,self.disp_height-300))
 
@@ -156,7 +158,7 @@ class Manager:
                 self.display_text(str(ID), (self.disp_width/2,self.disp_height-550))
                 self.display_text("RECORD THIS NUMBER IN A SAFE PLACE.", (self.disp_width/2,self.disp_height-500))
                 self.display_text("YOU WILL NEED IT FOR FUTURE TESTS.", (self.disp_width/2,self.disp_height-450))
-                self.display_text("When ready, press J to begin testing.", (self.disp_width/2,self.disp_height-400))
+                self.display_text("When ready, press J to continue.", (self.disp_width/2,self.disp_height-400))
                 pygame.display.update()
 
                 #first trial for a new participant is control
@@ -176,8 +178,53 @@ class Manager:
                         #user ready to begin testing
                         if event.key == pygame.K_j:
                             self.win.fill((255, 255, 255))
-                            self.game_phase = "playing"
+                            self.game_phase = "surveys"
                             pygame.display.update()
+
+            elif self.game_phase == "surveys":
+                self.win.fill((255, 255, 255))
+                self.display_text("Click the link below for pre-test survey.", (self.disp_width/2,self.disp_height-600))
+                #self.display_text("https://www.google.com", (self.disp_width/2,self.disp_height-500))
+
+                #special handling for clickable survey link
+                text = self.DEFAULT_FONT.render("https://www.google.com", True, (70, 29, 219), (255,255,255))
+                textRect = text.get_rect()
+                textRect.center = (self.disp_width/2, self.disp_height-500)
+                rect = self.win.blit(text,textRect)
+
+                self.display_text("...", (self.disp_width/2,self.disp_height-450))
+                self.display_text("When survey complete, press J to proceed to testing.", (self.disp_width/2,self.disp_height-400))
+                pygame.display.update()
+
+                #check for keyboard input
+                for event in pygame.event.get():
+                    #quit game when forced
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        pos = event.pos
+                        if rect.collidepoint(pos):
+                            webbrowser.open(r"https://stackoverflow.com/")
+                            flag_clicked = True
+
+
+                    #look for user response
+                    if event.type == pygame.KEYDOWN:
+
+                        #user ready to begin testing
+                        if event.key == pygame.K_j:
+                            if flag_clicked:
+                                self.win.fill((255, 255, 255))
+                                self.game_phase = "playing"
+                                pygame.display.update()
+                            else:
+                                self.display_text("Please complete survey before proceeding.", (self.disp_width/2,self.disp_height-350))
+                                pygame.display.update()
+                
+
+
 
             elif self.game_phase == "playing":
                 
@@ -225,7 +272,11 @@ class Manager:
                             pygame.quit()
                             sys.exit()
 
-                        seconds = 30
+                        if self.trial.current_task == 1:
+                            seconds = 10
+                        else:
+                            seconds = 30
+
                         for i in range(seconds+1):
                             pygame.event.pump()
                             self.win.fill((255, 255, 255))

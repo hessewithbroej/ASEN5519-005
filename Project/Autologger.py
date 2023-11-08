@@ -51,6 +51,7 @@ class Autologger:
     else:
       group_num = None
       trial_num = 0
+      datetime_str = None
 
     return(group_num, trial_num, datetime_str)
   

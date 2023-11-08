@@ -7,7 +7,7 @@ class Nback_game:
 
     def __init__(self, N, num_prompts, proportion_true, prompt_time_visible, prompt_time_respond):
         #game conditions, general
-        self.num_prompts = num_prompts
+        self.num_prompts = num_prompts + N
         self.N = N
         self.proportion_true = proportion_true
         self.prompt_time_visible = prompt_time_visible
@@ -15,7 +15,7 @@ class Nback_game:
 
         #game conditions, specific
         self.prompts = None
-        self.matches = np.zeros(num_prompts)
+        self.matches = np.zeros(self.num_prompts)
 
         #live game variables
         self.current_prompt = 0
@@ -66,7 +66,7 @@ class Nback_game:
         self.prompts = np.random.choice(self.TWO_DIGIT_INTEGERS,self.num_prompts, replace=False)
 
         #number of prompts satisfying the specified N-back condition
-        num_true = int(np.ceil(self.num_prompts*self.proportion_true))
+        num_true = int(np.ceil((self.num_prompts-self.N)*self.proportion_true))
 
         #generate a list that contains the prompt numbers that should evaluate to true
         true_indices = np.sort(np.random.choice(range(self.N,self.num_prompts), num_true, replace=False))[::-1]
@@ -112,7 +112,7 @@ class Nback_game:
             else:
                 if int(self.prompts[int(false_ind)+self.N]) != val:
                     self.prompts[int(false_ind)] = val
-
+    #helper function to validate n-backs are being graded correctly
     def solve_NBack(self):
         num_matches = 0
         for i,val in enumerate(self.prompts):
@@ -146,6 +146,6 @@ class Nback_game:
 
 
     def report_results(self):
-        self.accuracy = sum(self.successes)/self.num_prompts
-        print(f"Test Results : \n {sum(self.successes)} correct responses out of {self.num_prompts} total prompts. Overall accuracy: {100*self.accuracy} %")
+        self.accuracy = sum(self.successes[self.N::])/(self.num_prompts-self.N)
+        print(f"Test Results : \n {sum(self.successes[self.N::])} correct responses out of {self.num_prompts-self.N} total prompts. Overall accuracy: {100*self.accuracy} %")
 

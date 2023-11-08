@@ -37,6 +37,7 @@ class Manager:
         flag_ID_generated = False
         flag_game_complete = False
         flag_clicked = False
+        flag_trial_complete = False
         self.running = True
         itrs = 0
 
@@ -46,7 +47,9 @@ class Manager:
             self.win.fill((255, 255, 255))
 
             if self.game_phase == "title":
-                self.display_text("Title text. Press J to continue.", (self.disp_width/2,self.disp_height/2))
+                self.display_text("Welcome to the N-back testing environment.", (self.disp_width/2,self.disp_height-600))
+                self.display_text("Press J to continue.", (self.disp_width/2,self.disp_height-550))
+
                 
                 for event in pygame.event.get():
                     #quit game when forced
@@ -67,12 +70,12 @@ class Manager:
                             self.game_phase = "info_enter"
             
             elif self.game_phase == "info_enter":
-                self.display_text("If this is your first trial, press J.", (self.disp_width/2,self.disp_height/1.6))
-                self.display_text("Otherwise, enter your 5-digit ID # and press Enter.", (self.disp_width/2,self.disp_height/1.4))
+                self.display_text("If this is your first trial, press J.", (self.disp_width/2,self.disp_height-600))
+                self.display_text("Otherwise, enter your 5-digit ID # and press Enter.", (self.disp_width/2,self.disp_height-550))
 
                 # create rectangle 
-                self.display_text("ID: ", (360,616))
-                input_rect = pygame.Rect(self.disp_width/2, 600, 140, 32) 
+                self.display_text("ID: ", (360,416))
+                input_rect = pygame.Rect(self.disp_width/2, 400, 140, 32) 
                 
                 # color_active stores color(lightskyblue3) which 
                 # gets active when input box is clicked by user 
@@ -110,9 +113,9 @@ class Manager:
                                 #enforce a minimum wait between trials
                                 datetime_object = datetime.strptime(datetime_str, '%m/%d/%Y %H:%M:%S')
                                 now = datetime.now()
-                                if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS/1000:
+                                if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS:
                                     self.win.fill((255, 255, 255))
-                                    self.display_text(f"Must wait a minimum of 0.001 day between trials.", (self.disp_width/2,self.disp_height/1.8))
+                                    self.display_text(f"Must wait a minimum of 1 day between trials.", (self.disp_width/2,self.disp_height/1.8))
                                     self.display_text(f"Last trial completed {datetime_str}", (self.disp_width/2,self.disp_height/1.6))
                                     pygame.display.update()
                                     pygame.time.delay(5000)
@@ -193,7 +196,7 @@ class Manager:
                 rect = self.win.blit(text,textRect)
 
                 self.display_text("...", (self.disp_width/2,self.disp_height-450))
-                self.display_text("When survey complete, press J to proceed to testing.", (self.disp_width/2,self.disp_height-400))
+                self.display_text("When complete, press J to proceed to testing.", (self.disp_width/2,self.disp_height-400))
                 pygame.display.update()
 
                 #check for keyboard input
@@ -257,25 +260,49 @@ class Manager:
 
                         #if we've completed all tasks
                         if self.game == None:
+                            flag_trial_complete = True
                             self.win.fill((255, 255, 255))
-                            self.display_text("All games in trial have been completed.", (self.disp_width/2,self.disp_height/1.8))
-                            self.display_text("Exiting", (self.disp_width/2,self.disp_height/1.6))
+                            self.display_text("All games in trial have been completed.", (self.disp_width/2,self.disp_height-600))
+                            self.display_text("Please complete post-test survey.", (self.disp_width/2,self.disp_height-550))
+                            #self.display_text("Exiting", (self.disp_width/2,self.disp_height/1.6))
                             
+                            #special handling for clickable survey link
+                            text = self.DEFAULT_FONT.render("https://www.STRATEGY_SURVEY.com", True, (70, 29, 219), (255,255,255))
+                            textRect = text.get_rect()
+                            textRect.center = (self.disp_width/2, self.disp_height-500)
+                            rect = self.win.blit(text,textRect)
+
+                            #self.display_text("Press J to quit when complete.", (self.disp_width/2,self.disp_height-450))
+
                             now = datetime.now()
+
+
                             trial_complete_time = now.strftime("%m/%d/%Y %H:%M:%S")
 
                             #write trial-level performance to sheet
                             Autologger.write_trial_data_to_sheet(ID, group_number, trial_num, trial_complete_time, self.trial.task_sequence, self.trial.accuracies)
-
                             pygame.display.update()
-                            pygame.time.delay(5000)
-                            pygame.quit()
-                            sys.exit()
+                            while True:
+                                #check for keyboard input
+                                for event in pygame.event.get():
+                                    #quit game when forced
+                                    if event.type == pygame.QUIT:
+                                        pygame.quit()
+                                        sys.exit()
+
+                                    if event.type == pygame.MOUSEBUTTONDOWN:
+                                        pos = event.pos
+                                        if rect.collidepoint(pos):
+                                            webbrowser.open(r"https://stackoverflow.com/")
+                                            pygame.quit()
+                                            sys.exit()
+
+
 
                         if self.trial.current_task == 1:
-                            seconds = 10
+                            seconds = 20
                         else:
-                            seconds = 30
+                            seconds = 20
 
                         for i in range(seconds+1):
                             pygame.event.pump()
@@ -305,7 +332,7 @@ class Manager:
                     flag_game_complete = False
 
                 #check to see if we have shown any prompts yet. First prompt shown.
-                if self.game.get_current_prompt_ind() == 0:
+                if not flag_trial_complete and self.game.get_current_prompt_ind() == 0:
                     val = self.game.get_next_prompt()
                     prompt = Prompt(self.win, str(val), self.game.prompt_time_visible, self.game.prompt_time_respond)
                     prompt.draw(self.win)
@@ -359,10 +386,11 @@ class Manager:
                         #if user did not provide a response, treat it as indicating no match
                         if not flag_responded:
                             result = self.game.store_response(0)
-                            if result==False:
-                                self.display_text("WRONG", (self.disp_width/2,self.disp_height/3))
-                            else:
-                                self.display_text("CORRECT", (self.disp_width/2,self.disp_height/3))
+                            if self.game.get_current_prompt_ind() > self.game.N:
+                                if result==False:
+                                    self.display_text("WRONG", (self.disp_width/2,self.disp_height/3))
+                                else:
+                                    self.display_text("CORRECT", (self.disp_width/2,self.disp_height/3))
                         else:
                             if flag_correct:
                                 self.display_text("CORRECT", (self.disp_width/2,self.disp_height/3))

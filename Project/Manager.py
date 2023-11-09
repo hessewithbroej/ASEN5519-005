@@ -110,41 +110,34 @@ class Manager:
                                 #get group number and trial number from trialKey spreadsheet to determine the task sequence
                                 group_number, trial_num,datetime_str = Autologger.find_previous_trial_results(Autologger.read_trial_data_from_sheet(), ID)
                                 
-                                #could not find data of specified ID
-                                if group_number == None:
-                                    self.display_text(f"ID not found.", (self.disp_width/2,self.disp_height-300))
-                                    self.display_text(f"Please verify ID was entered correctly.", (self.disp_width/2,self.disp_height-250))
+                                #enforce a minimum wait between trials
+                                datetime_object = datetime.strptime(datetime_str, '%m/%d/%Y %H:%M:%S')
+                                now = datetime.now()
+                                if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS:
+                                    self.win.fill((255, 255, 255))
+                                    self.display_text(f"Must wait a minimum of 1 day between trials.", (self.disp_width/2,self.disp_height/1.8))
+                                    self.display_text(f"Last trial completed {datetime_str}", (self.disp_width/2,self.disp_height/1.6))
+                                    pygame.display.update()
+                                    pygame.time.delay(5000)
+                                    pygame.quit()
+                                    sys.exit()
 
+                                task_sequence = Autologger.determine_next_trial(group_number, trial_num)
+
+                                if task_sequence == None:
+                                    self.win.fill((255, 255, 255))
+                                    self.display_text(f"All trials have been completed.", (self.disp_width/2,self.disp_height/1.8))
+                                    self.display_text(f"Thank you for participating.", (self.disp_width/2,self.disp_height/1.6))
                                     pygame.display.update()
                                     pygame.time.delay(3000)
+                                    pygame.quit()
+                                    sys.exit()
 
-                                else:
-                                    #enforce a minimum wait between trials
-                                    datetime_object = datetime.strptime(datetime_str, '%m/%d/%Y %H:%M:%S')
-                                    now = datetime.now()
-                                    if (now-datetime_object).total_seconds() < self.trial.MIN_TIME_BETWEEN_TRIALS:
-                                        self.win.fill((255, 255, 255))
-                                        self.display_text(f"Must wait a minimum of 1 day between trials.", (self.disp_width/2,self.disp_height/1.8))
-                                        self.display_text(f"Last trial completed {datetime_str}", (self.disp_width/2,self.disp_height/1.6))
-                                        pygame.display.update()
-                                        pygame.time.delay(5000)
-                                        pygame.quit()
-                                        sys.exit()
-
-                                    task_sequence = Autologger.determine_next_trial(group_number, trial_num)
-
-                                    if task_sequence == None:
-                                        self.win.fill((255, 255, 255))
-                                        self.display_text(f"All trials have been completed.", (self.disp_width/2,self.disp_height/1.8))
-                                        self.display_text(f"Thank you for participating!", (self.disp_width/2,self.disp_height/1.6))
-                                        pygame.display.update()
-                                        pygame.time.delay(3000)
-                                        pygame.quit()
-                                        sys.exit()
-
-                                    trial_num += 1
-                                    self.trial.task_sequence = str(task_sequence)
-                                    self.game_phase = "playing"
+                                trial_num += 1
+                                self.trial.task_sequence = str(task_sequence)
+                                
+                                
+                                self.game_phase = "surveys"
                             else:
                                 self.display_text("Invalid ID #, must be 5 digits.", (self.disp_width/2,self.disp_height-300))
 
@@ -197,7 +190,7 @@ class Manager:
                 #self.display_text("https://www.google.com", (self.disp_width/2,self.disp_height-500))
 
                 #special handling for clickable survey link
-                text = self.DEFAULT_FONT.render("LINK", True, (70, 29, 219), (255,255,255))
+                text = self.DEFAULT_FONT.render("https://www.google.com", True, (70, 29, 219), (255,255,255))
                 textRect = text.get_rect()
                 textRect.center = (self.disp_width/2, self.disp_height-500)
                 rect = self.win.blit(text,textRect)
@@ -216,7 +209,7 @@ class Manager:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         pos = event.pos
                         if rect.collidepoint(pos):
-                            webbrowser.open(r"https://cuboulder.qualtrics.com/jfe/form/SV_1SvYN5hY5JkTOia")
+                            webbrowser.open(r"https://stackoverflow.com/")
                             flag_clicked = True
 
 
@@ -232,7 +225,6 @@ class Manager:
                             else:
                                 self.display_text("Please complete survey before proceeding.", (self.disp_width/2,self.disp_height-350))
                                 pygame.display.update()
-                                pygame.time.delay(3000)
                 
 
 
@@ -275,7 +267,7 @@ class Manager:
                             #self.display_text("Exiting", (self.disp_width/2,self.disp_height/1.6))
                             
                             #special handling for clickable survey link
-                            text = self.DEFAULT_FONT.render("LINK", True, (70, 29, 219), (255,255,255))
+                            text = self.DEFAULT_FONT.render("https://www.STRATEGY_SURVEY.com", True, (70, 29, 219), (255,255,255))
                             textRect = text.get_rect()
                             textRect.center = (self.disp_width/2, self.disp_height-500)
                             rect = self.win.blit(text,textRect)
@@ -301,7 +293,7 @@ class Manager:
                                     if event.type == pygame.MOUSEBUTTONDOWN:
                                         pos = event.pos
                                         if rect.collidepoint(pos):
-                                            webbrowser.open(r"https://cuboulder.qualtrics.com/jfe/form/SV_0DHZr4sHwFW7sWi")
+                                            webbrowser.open(r"https://stackoverflow.com/")
                                             pygame.quit()
                                             sys.exit()
 
@@ -341,10 +333,6 @@ class Manager:
 
                 #check to see if we have shown any prompts yet. First prompt shown.
                 if not flag_trial_complete and self.game.get_current_prompt_ind() == 0:
-                    #brief pause before showing first  prompt
-                    self.win.fill((255, 255, 255))
-                    pygame.display.update()
-                    pygame.time.delay(1000)
                     val = self.game.get_next_prompt()
                     prompt = Prompt(self.win, str(val), self.game.prompt_time_visible, self.game.prompt_time_respond)
                     prompt.draw(self.win)

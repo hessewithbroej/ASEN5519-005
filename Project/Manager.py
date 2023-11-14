@@ -190,7 +190,7 @@ class Manager:
                 #self.display_text("https://www.google.com", (self.disp_width/2,self.disp_height-500))
 
                 #special handling for clickable survey link
-                text = self.DEFAULT_FONT.render("https://www.google.com", True, (70, 29, 219), (255,255,255))
+                text = self.DEFAULT_FONT.render("LINK", True, (70, 29, 219), (255,255,255))
                 textRect = text.get_rect()
                 textRect.center = (self.disp_width/2, self.disp_height-500)
                 rect = self.win.blit(text,textRect)
@@ -209,7 +209,7 @@ class Manager:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         pos = event.pos
                         if rect.collidepoint(pos):
-                            webbrowser.open(r"https://stackoverflow.com/")
+                            webbrowser.open(r"https://cuboulder.qualtrics.com/jfe/form/SV_1SvYN5hY5JkTOia")
                             flag_clicked = True
 
 
@@ -267,7 +267,7 @@ class Manager:
                             #self.display_text("Exiting", (self.disp_width/2,self.disp_height/1.6))
                             
                             #special handling for clickable survey link
-                            text = self.DEFAULT_FONT.render("https://www.STRATEGY_SURVEY.com", True, (70, 29, 219), (255,255,255))
+                            text = self.DEFAULT_FONT.render("LINK", True, (70, 29, 219), (255,255,255))
                             textRect = text.get_rect()
                             textRect.center = (self.disp_width/2, self.disp_height-500)
                             rect = self.win.blit(text,textRect)
@@ -293,7 +293,7 @@ class Manager:
                                     if event.type == pygame.MOUSEBUTTONDOWN:
                                         pos = event.pos
                                         if rect.collidepoint(pos):
-                                            webbrowser.open(r"https://stackoverflow.com/")
+                                            webbrowser.open(r"https://cuboulder.qualtrics.com/jfe/form/SV_0DHZr4sHwFW7sWi")
                                             pygame.quit()
                                             sys.exit()
 
